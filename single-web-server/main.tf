@@ -19,7 +19,7 @@ terraform {
 # ------------------------------------------------------------------------------
 
 provider "aws" {
-  region = "us-east-2"
+  region = "us-west-2"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -28,9 +28,11 @@ provider "aws" {
 
 resource "aws_instance" "example" {
   # Ubuntu Server 18.04 LTS (HVM), SSD Volume Type in us-east-2
-  ami                    = "ami-0c55b159cbfafe1f0"
+  ami                    = "ami-03d5c68bab01f3496"
   instance_type          = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
+  key_name = "Keypair-CorePlatformServices-Dev"
+  subnet_id = "subnet-0bf53d6a918e5262a"
 
   user_data = <<-EOF
               #!/bin/bash
@@ -39,7 +41,11 @@ resource "aws_instance" "example" {
               EOF
 
   tags = {
-    Name = "terraform-example"
+    Name = var.instance_name
+    Owner = "Johnathan Tran"
+    Application = "Example Web server"
+    Environment = "Dev"
+    backup = "thinbackup"
   }
 }
 
@@ -48,13 +54,13 @@ resource "aws_instance" "example" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_security_group" "instance" {
-  name = "terraform-example-instance"
-
-  # Inbound HTTP from anywhere
+  name = "SecurityGroup-TerraformLab-Server2019"
+  description = "Security Group for TerraformLab test server"
+  vpc_id = "vpc-08f74c0dcfc7a75d7"
   ingress {
-    from_port   = var.server_port
-    to_port     = var.server_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks = ["10.0.0.0/8"]
   }
 }
